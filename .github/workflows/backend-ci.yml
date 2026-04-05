@@ -51,6 +51,7 @@ jobs:
           ENV: development
           JWT_SECRET: ci-test-secret-key-not-real
           ENCRYPTION_KEY: ci-test-encryption-key-32bytes!!
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
         run: python -m pytest tests/ --tb=short -q
 
       - name: Upload Bandit report

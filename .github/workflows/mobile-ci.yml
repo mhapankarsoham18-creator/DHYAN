@@ -27,6 +27,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Generate mock env assets
+        run: touch .env.development .env.production
+
       - name: Install dependencies
         run: flutter pub get
 

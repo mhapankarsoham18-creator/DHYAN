@@ -40,6 +40,7 @@ dependencies:
   fl_chart: ^1.2.0
   flutter_secure_storage: ^10.0.0
   firebase_core: ^4.6.0
+  http: ^1.2.0
   flutter_screen_lock: ^9.2.2+2
   local_auth: ^3.0.1
   firebase_auth: ^6.3.0
