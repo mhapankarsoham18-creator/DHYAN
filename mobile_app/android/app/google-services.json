@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "815360308337",
+    "project_id": "dhyan-c8769",
+    "storage_bucket": "dhyan-c8769.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:815360308337:android:80e8b7b565488aa4c4d7d0",
+        "android_client_info": {
+          "package_name": "com.csit.mobile_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2LW_Fzvss-9ivctQlw575hZ2FIbJxJbM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

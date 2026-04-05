@@ -1,0 +1,12 @@
+# bandit.yaml
+exclude_dirs:
+  - 'tests'
+  - '.venv'
+
+skips:
+  - 'B101'  # assert_used: Valid for testing or certain business logic
+  - 'B311'  # random: Random is fine for non-cryptographic purposes
+  - 'B104'  # bind to all interfaces: Uvicorn typically binds to all interfaces in docker
+
+assert_used:
+  skips: ['*_test.py', 'test_*.py']

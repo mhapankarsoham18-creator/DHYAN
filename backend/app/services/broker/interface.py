@@ -1,0 +1,139 @@
+from abc import ABC, abstractmethod
+from typing import Optional
+from dataclasses import dataclass
+from enum import Enum
+
+
+class OrderSide(str, Enum):
+    BUY = "BUY"
+    SELL = "SELL"
+
+
+class OrderType(str, Enum):
+    MARKET = "MARKET"
+    LIMIT = "LIMIT"
+
+
+class OrderStatus(str, Enum):
+    PENDING = "PENDING"
+    EXECUTED = "EXECUTED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+
+
+@dataclass
+class OrderRequest:
+    """Represents an incoming order placement request."""
+    symbol: str
+    side: OrderSide
+    order_type: OrderType
+    quantity: int
+    price: Optional[float] = None  # Required for LIMIT, ignored for MARKET
+
+
+@dataclass
+class OrderResponse:
+    """Represents the broker's response after placing an order."""
+    order_id: str
+    status: OrderStatus
+    filled_price: Optional[float] = None
+    message: Optional[str] = None
+
+
+@dataclass
+class Position:
+    """Represents a current holding / open position."""
+    symbol: str
+    quantity: int
+    average_price: float
+    current_price: Optional[float] = None
+    pnl: Optional[float] = None
+
+
+@dataclass
+class Quote:
+    """Represents a market quote for a symbol."""
+    symbol: str
+    last_price: float
+    bid: Optional[float] = None
+    ask: Optional[float] = None
+    volume: Optional[int] = None
+
+
+class BrokerInterface(ABC):
+    """Abstract Base Class defining the contract for all broker integrations.
+
+    All broker clients (Fyers, Paper Trading, etc.) must implement this
+    interface to ensure they can be used interchangeably via the Strategy pattern.
+    """
+
+    @abstractmethod
+    async def connect(self) -> bool:
+        """Authenticate and establish connection to the broker.
+
+        Returns:
+            True if the connection was successful, False otherwise.
+        """
+        ...
+
+    @abstractmethod
+    async def disconnect(self) -> None:
+        """Gracefully close the broker connection."""
+        ...
+
+    @abstractmethod
+    async def place_order(self, order: OrderRequest) -> OrderResponse:
+        """Place a new order with the broker.
+
+        Args:
+            order: The order details to submit.
+
+        Returns:
+            An OrderResponse indicating the result.
+        """
+        ...
+
+    @abstractmethod
+    async def cancel_order(self, order_id: str) -> bool:
+        """Cancel an existing pending order.
+
+        Args:
+            order_id: The broker-assigned order ID to cancel.
+
+        Returns:
+            True if cancellation was successful.
+        """
+        ...
+
+    @abstractmethod
+    async def get_positions(self) -> list[Position]:
+        """Retrieve all open positions.
+
+        Returns:
+            A list of current positions.
+        """
+        ...
+
+    @abstractmethod
+    async def get_quote(self, symbol: str) -> Quote:
+        """Get the latest market quote for a given symbol.
+
+        Args:
+            symbol: The trading symbol (e.g., 'NSE:RELIANCE').
+
+        Returns:
+            A Quote object with the latest price data.
+        """
+        ...
+
+    @abstractmethod
+    async def get_order_status(self, order_id: str) -> OrderResponse:
+        """Check the current status of a placed order.
+
+        Args:
+            order_id: The broker-assigned order ID.
+
+        Returns:
+            An OrderResponse with the current status.
+        """
+        ...
