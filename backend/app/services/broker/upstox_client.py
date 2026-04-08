@@ -189,3 +189,7 @@ class UpstoxClient(BrokerInterface):
         except Exception as e:
             logger.error("Upstox get_order_status error: %s", e)
             return OrderResponse(order_id=order_id, status=OrderStatus.REJECTED, message=str(e))
+
+    async def refresh_session(self) -> dict[str, str] | None:
+        # Implement Upstox token generation logic here
+        return None

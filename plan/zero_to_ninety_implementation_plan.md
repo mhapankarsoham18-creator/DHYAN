@@ -98,9 +98,9 @@ This plan integrates **Premium Subscriptions (Razorpay/UPI)** and **Bank-Grade S
   - Integrate Sentry Flutter for UI crash tracking.
 - [x] **4.4 CI/CD Pipelines**
   - Setup GitHub Actions / GitLab CI for automated testing prior to merge.
-- [ ] **4.5 Disaster Recovery & Backups**
+- [x] **4.5 Disaster Recovery & Backups**
   - Enable Point-in-Time Recovery (PITR) on the Production Supabase Postgres instance to survive catastrophic data loss or accidental deletion.
-- [ ] **4.6 Log Masking & PII Scrubbing**
+- [x] **4.6 Log Masking & PII Scrubbing**
   - Configure `logging` and Sentry to strictly mask PAN numbers, Passwords, and Auth Tokens so production logs cannot be exploited by internal threats.
 
 ---
@@ -115,10 +115,10 @@ This plan integrates **Premium Subscriptions (Razorpay/UPI)** and **Bank-Grade S
 - [x] **5.2 Hardcode Elimination**
   - Wire the Notification center UI to a real `notifications` database table.
   - Ensure the "Connected Brokers" and "Funds" dashboard strictly compute from the DB.
-- [ ] **5.3 Mandatory Legal Disclaimers (App Store Compliance)**
+- [x] **5.3 Mandatory Legal Disclaimers (App Store Compliance)**
   - Hardcode persistent regulatory legal text across all analysis and UI screens: *"This is for informational purposes only. Not investment advice. Consult a financial advisor before investing."*
   - This is a mandatory requirement to survive Apple/Google App Store review algorithms.
-- [ ] **5.4 Automated App Store Builds**
+- [x] **5.4 Automated App Store Builds**
   - Configure Fastlane / GitHub Actions to securely build signed `.aab` (Android) and `.ipa` (iOS) files using securely vaulted keystores/certificates off-machine.
 
 ---

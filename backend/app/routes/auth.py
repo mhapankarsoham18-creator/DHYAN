@@ -5,7 +5,7 @@ from firebase_admin import auth as firebase_auth, credentials
 
 from typing import Any
 from fastapi import APIRouter, Depends, Request, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime, timezone
@@ -30,20 +30,20 @@ else:
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 class TokenExchangeRequest(BaseModel):
-    token: str
-    phone_number: str
+    token: str = Field(..., max_length=2000)
+    phone_number: str = Field(..., max_length=20)
 
 class TokenExchangeResponse(BaseModel):
     token: str
     user: dict[str, Any]
 
 class ProfileUpdateRequest(BaseModel):
-    name: str | None = None
-    email: str | None = None
-    phone_number: str | None = None
+    name: str | None = Field(None, max_length=100)
+    email: str | None = Field(None, max_length=255)
+    phone_number: str | None = Field(None, max_length=20)
 
 @router.post("/exchange-token", response_model=TokenExchangeResponse)
-@limiter.limit("5/minute")
+@limiter.limit("5/15minute")
 async def exchange_token(request: Request, req: TokenExchangeRequest, db: AsyncSession = Depends(get_db)):
     # Verify the Firebase token
     if not firebase_admin._apps:

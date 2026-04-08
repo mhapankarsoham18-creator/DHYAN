@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:mobile_app/core/network/network_security.dart';
+import 'package:mobile_app/core/services/device_fingerprint_service.dart';
 
 import 'package:firebase_app_check/firebase_app_check.dart';
 
@@ -55,6 +56,14 @@ class DioClient {
             }
           } catch (e) {
              // Ignore if Firebase failed to initialize
+          }
+          
+          // Add Device Fingerprint for Free Tier Rate Limiting
+          try {
+            final fingerprint = await deviceFingerprintService.getFingerprint();
+            options.headers['X-Device-Fingerprint'] = fingerprint;
+          } catch (e) {
+            // Ignore if fingerprint fails, backend should rate limit IP fallback or reject
           }
 
           // Attempt to retrieve a saved JWT

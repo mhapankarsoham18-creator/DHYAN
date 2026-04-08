@@ -192,3 +192,7 @@ class ShoonyaClient(BrokerInterface):
         except Exception as e:
             logger.error("Shoonya get_order_status error: %s", e)
             return OrderResponse(order_id=order_id, status=OrderStatus.REJECTED, message=str(e))
+
+    async def refresh_session(self) -> dict[str, str] | None:
+        # Implement Shoonya token generation logic here
+        return None

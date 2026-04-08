@@ -17,11 +17,12 @@ if not db_url:
 parsed = urlparse(db_url)
 if parsed.scheme == "postgresql" or parsed.scheme == "postgres":
     parsed = parsed._replace(scheme="postgresql+asyncpg")
-
-DATABASE_URL = urlunparse(parsed)
+    async_db_url = urlunparse(parsed)
+else:
+    async_db_url = db_url
 
 # Disable echo to prevent leaking PII/Order volumes in server logs
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(async_db_url, echo=False)
 
 async_session_maker = async_sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False

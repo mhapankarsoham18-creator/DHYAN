@@ -25,12 +25,12 @@ def test_create_customer_success(mock_client: MagicMock) -> None:
     mock_client.customer.create.return_value = mock_res
     
     # Mock user
-    class MockUser:
-        id = "user123"
-        phone_number = "+919999999999"
-        name = "Test User"
+    mock_user = MagicMock()
+    mock_user.id = "user123"
+    mock_user.phone_number = "+919999999999"
+    mock_user.name = "Test User"
     
-    cust_id = create_customer(MockUser()) # type: ignore
+    cust_id = create_customer(mock_user)
     assert cust_id == "cust_mock123"
 
 @patch("app.services.razorpay_service.client")

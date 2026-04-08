@@ -11,6 +11,10 @@ from app.db.database import engine
 from app.routes import api_router
 from app.services.security_middleware import setup_security
 
+from app.core.logging_setup import setup_logging, sentry_before_send
+
+# Initialize secure logging
+setup_logging()
 logger = logging.getLogger(__name__)
 
 # ── Sentry Observability ────────────────────────────
@@ -25,6 +29,7 @@ if SENTRY_DSN:
             StarletteIntegration(),
         ],
         environment=os.getenv("ENV", "development"),
+        before_send=sentry_before_send,
     )
     logger.info("Sentry initialized for environment: %s", os.getenv("ENV", "development"))
 else:
@@ -33,6 +38,15 @@ else:
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # Setup resources
+    from app.services.alert_engine import AlertEngine
+    from app.services.token_refresh_service import TokenRefreshService
+    
+    alert_engine = AlertEngine()
+    alert_engine.start()
+    
+    token_refresh = TokenRefreshService()
+    token_refresh.start()
+    
     yield
     # Cleanup resources
     await engine.dispose()

@@ -208,3 +208,7 @@ class AngelOneClient(BrokerInterface):
                 status=OrderStatus.REJECTED,
                 message=str(e),
             )
+
+    async def refresh_session(self) -> dict[str, str] | None:
+        # Implement AngelOne token generation logic here
+        return None

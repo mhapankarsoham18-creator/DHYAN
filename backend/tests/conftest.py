@@ -1,5 +1,11 @@
 # pyright: reportMissingImports=false, reportAny=false, reportExplicitAny=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnusedParameter=false, reportMissingParameterType=false, reportUnknownParameterType=false, reportReturnType=false
 
+import os
+import sys
+
+# Ensure backend root is in PYTHONPATH
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 from collections.abc import AsyncGenerator
 import asyncio
@@ -21,7 +27,6 @@ def event_loop():
 async def mock_user() -> User:
     user = User()
     user.id = uuid.uuid4()
-    user.firebase_uid = "test-uid-123"
     user.phone_number = "+1234567890"
     user.virtual_balance = 100000.0
     return user

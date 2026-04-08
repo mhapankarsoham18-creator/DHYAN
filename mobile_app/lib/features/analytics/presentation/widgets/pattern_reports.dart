@@ -10,11 +10,11 @@ class WeeklyReportCard extends StatelessWidget {
   final IconData icon;
 
   const WeeklyReportCard({
-    Key? key,
+    super.key,
     required this.reportFuture,
     required this.title,
     required this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +132,7 @@ Future<void> showPatternExplainer(
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Row(

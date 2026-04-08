@@ -119,14 +119,39 @@ def test_sebi_sanitizer_blocks_entry_point() -> None:
     assert "compliance" in result.lower() or "advisor" in result.lower()
 
 
+@pytest.mark.parametrize("bad_phrase", [
+    "You should consider buying this immediately",
+    "It is undervalued and a good entry point",
+    "Go long on this asset",
+    "This is a sure shot multibagger",
+    "Guaranteed return of 100%",
+    "My price target is $500",
+    "I'd recommend that you accumulate shares now",
+    "Time to book profits and exit",
+    "Strong sell signal detected",
+    "Golden cross setup forming, buy on dips",
+    "This is a wealth creator for long term hold",
+    "Don't miss this opportunity to buy",
+    "Exit immediately before downside risk",
+    "Safe investment with 10x return expected"
+])
+def test_sebi_sanitizer_adversarial_phrases(bad_phrase: str) -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response(f"The stock looks ok. {bad_phrase}. Good luck.")
+    assert "compliance" in result.lower() or "advisor" in result.lower()
+
 # ── Helper ────────────────────────────────────────────────
+class _MockMessage:
+    def __init__(self, text: str):
+        self.content: str = text
+
 class _MockChoice:
     def __init__(self, text: str):
-        self.message = type("obj", (object,), {"content": text})()
+        self.message: _MockMessage = _MockMessage(text)
 
 class _MockCompletion:
     def __init__(self, text: str):
-        self.choices = [_MockChoice(text)]
+        self.choices: list[_MockChoice] = [_MockChoice(text)]
 
 def _mock_response(text: str) -> _MockCompletion:
     return _MockCompletion(text)

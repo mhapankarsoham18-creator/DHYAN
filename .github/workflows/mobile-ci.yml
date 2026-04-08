@@ -28,7 +28,9 @@ jobs:
           cache: true
 
       - name: Generate mock env assets
-        run: touch .env.development .env.production
+        run: |
+          echo "MOCK=true" > .env.development
+          echo "MOCK=true" > .env.production
 
       - name: Install dependencies
         run: flutter pub get

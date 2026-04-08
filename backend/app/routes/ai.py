@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel, conlist
-from typing import Optional
+from pydantic import BaseModel
+from app.models.user import User
 
 from app.services.auth_service import get_current_user
 from app.services.ai_service import (
@@ -23,8 +23,8 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 # ==========================================
 class ChartInsightRequest(BaseModel):
     symbol: str
-    rsi: Optional[float] = None
-    macd_signal: Optional[str] = None
+    rsi: float | None = None
+    macd_signal: str | None = None
     price_vs_52w_high: float
     price_vs_52w_low: float
     trend: str
@@ -51,7 +51,7 @@ class PortfolioReportRequest(BaseModel):
 # ==========================================
 
 @router.post("/chart-insight")
-async def api_chart_insight(request: Request, body: ChartInsightRequest, user: dict = Depends(get_current_user)):
+async def api_chart_insight(body: ChartInsightRequest, user: User = Depends(get_current_user)):
     insight = await get_chart_insight(
         symbol=body.symbol,
         rsi=body.rsi,
@@ -63,7 +63,7 @@ async def api_chart_insight(request: Request, body: ChartInsightRequest, user: d
     return {"insight": insight}
 
 @router.post("/pattern-explain")
-async def api_pattern_explain(request: Request, body: PatternRequest, user: dict = Depends(get_current_user)):
+async def api_pattern_explain(body: PatternRequest, user: User = Depends(get_current_user)):
     explanation = await explain_pattern(
         pattern_name=body.pattern_name,
         symbol=body.symbol
@@ -71,7 +71,7 @@ async def api_pattern_explain(request: Request, body: PatternRequest, user: dict
     return {"explanation": explanation}
 
 @router.post("/sentiment")
-async def api_sentiment(request: Request, body: SentimentRequest, user: dict = Depends(get_current_user)):
+async def api_sentiment(body: SentimentRequest, user: User = Depends(get_current_user)):
     # Cap headlines strictly to 5 to prevent token stuffing
     result = await get_sentiment_summary(
         symbol=body.symbol,
@@ -80,7 +80,7 @@ async def api_sentiment(request: Request, body: SentimentRequest, user: dict = D
     return result
 
 @router.post("/reports/market-weekly")
-async def api_market_weekly(request: Request, body: MarketReportRequest, user: dict = Depends(get_current_user)):
+async def api_market_weekly(body: MarketReportRequest, user: User = Depends(get_current_user)):
     report = await get_market_weekly_report(
         nifty_change_pct=body.nifty_change_pct,
         top_sector=body.top_sector
@@ -88,7 +88,7 @@ async def api_market_weekly(request: Request, body: MarketReportRequest, user: d
     return {"report": report}
 
 @router.post("/reports/portfolio-weekly")
-async def api_portfolio_weekly(request: Request, body: PortfolioReportRequest, user: dict = Depends(get_current_user)):
+async def api_portfolio_weekly(body: PortfolioReportRequest, user: User = Depends(get_current_user)):
     report = await get_portfolio_weekly_report(
         trades_count=body.trades_count,
         win_rate=body.win_rate,

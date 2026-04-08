@@ -28,7 +28,15 @@ analyzer = SentimentIntensityAnalyzer()
 # Strictly block terms that could be classified as "investment advice" by regulators.
 FORBIDDEN_PHRASES = [
     "buy", "sell", "good entry", "target price", "will rise", "will fall",
-    "must invest", "strong bullish signal", "strong bearish signal", "recommend"
+    "must invest", "strong bullish signal", "strong bearish signal", "recommend",
+    "consider buying", "accumulate", "undervalued", "go long", "book profits",
+    "short term target", "long term target", "price target", "stop loss",
+    "entry point", "exit point", "golden cross", "death cross", "breakout expected",
+    "guaranteed return", "sure shot", "multibagger", "10x return", "safe investment",
+    "buy on dips", "sell on rallies", "hold for long term", "add more", "reduce position",
+    "exit immediately", "buy immediately", "strong buy", "strong sell", "upside potential",
+    "downside risk", "profit booking", "wealth creator", "portfolio pick", "time to buy",
+    "time to sell", "don't miss", "once in a lifetime", "market outperformer"
 ]
 
 def sanitize_response(text: str) -> str:

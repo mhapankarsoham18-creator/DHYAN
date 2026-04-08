@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/core/services/ai_service.dart';
+import 'legal_disclaimer.dart';
 
 class SentimentBadge extends StatelessWidget {
   final SentimentResult result;
 
-  const SentimentBadge({Key? key, required this.result}) : super(key: key);
+  const SentimentBadge({super.key, required this.result});
 
   @override
   Widget build(BuildContext context) {
@@ -31,39 +32,46 @@ class SentimentBadge extends StatelessWidget {
         icon = '➖';
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(icon, style: const TextStyle(fontSize: 14)),
-              const SizedBox(width: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(icon, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'News Sentiment',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
               Text(
-                'News Sentiment',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
+                result.summary,
+                style: TextStyle(color: color.withValues(alpha: 0.9), fontSize: 13),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            result.summary,
-            style: TextStyle(color: color.withOpacity(0.9), fontSize: 13),
-          ),
-        ],
-      ),
+        ),
+        const LegalDisclaimer(),
+      ],
     );
   }
 }

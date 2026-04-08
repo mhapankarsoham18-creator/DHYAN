@@ -1,5 +1,4 @@
 # pyright: reportMissingImports=false, reportAny=false, reportExplicitAny=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
-import pytest
 from datetime import datetime, timezone, timedelta
 from app.services.simulation_service import generate_price_series, get_current_simulated_prices, SIM_TICKERS
 

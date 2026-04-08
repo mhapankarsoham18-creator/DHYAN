@@ -1,6 +1,6 @@
 import uuid
 import structlog
-from typing import Optional
+from typing_extensions import override
 
 from app.services.broker.interface import (
     BrokerInterface,
@@ -35,18 +35,21 @@ class PaperTradingClient(BrokerInterface):
 
     # ── Connection ──────────────────────────────────────────
 
+    @override
     async def connect(self) -> bool:
         """Paper trading is always available."""
         self._connected = True
         logger.info("paper_trading.connected")
         return True
 
+    @override
     async def disconnect(self) -> None:
         self._connected = False
         logger.info("paper_trading.disconnected")
 
     # ── Orders ──────────────────────────────────────────────
 
+    @override
     async def place_order(self, order: OrderRequest) -> OrderResponse:
         """Simulate order execution.
 
@@ -111,6 +114,7 @@ class PaperTradingClient(BrokerInterface):
         )
         return response
 
+    @override
     async def cancel_order(self, order_id: str) -> bool:
         """Cancel a pending paper order."""
         order = self._orders.get(order_id)
@@ -119,6 +123,7 @@ class PaperTradingClient(BrokerInterface):
             return True
         return False
 
+    @override
     async def get_order_status(self, order_id: str) -> OrderResponse:
         order = self._orders.get(order_id)
         if order is None:
@@ -131,9 +136,11 @@ class PaperTradingClient(BrokerInterface):
 
     # ── Positions / Quotes ──────────────────────────────────
 
+    @override
     async def get_positions(self) -> list[Position]:
         return list(self._positions.values())
 
+    @override
     async def get_quote(self, symbol: str) -> Quote:
         price = self._simulated_prices.get(symbol, 0.0)
         return Quote(symbol=symbol, last_price=price)
@@ -150,7 +157,7 @@ class PaperTradingClient(BrokerInterface):
 
     # ── Private helpers ─────────────────────────────────────
 
-    def _resolve_fill_price(self, order: OrderRequest) -> Optional[float]:
+    def _resolve_fill_price(self, order: OrderRequest) -> float | None:
         if order.order_type == OrderType.MARKET:
             return self._simulated_prices.get(order.symbol)
         else:  # LIMIT
@@ -176,3 +183,8 @@ class PaperTradingClient(BrokerInterface):
                     total_cost = (pos.average_price * pos.quantity) + (price * qty_delta)
                     pos.average_price = total_cost / total_qty
                 pos.quantity = total_qty
+
+    @override
+    async def refresh_session(self) -> dict[str, str] | None:
+        # Paper trading requires no token refresh
+        return None

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'core/observability/sentry_masking.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -41,7 +42,7 @@ Future<void> main() async {
       options.dsn = sentryDsn;
       options.environment = kReleaseMode ? 'production' : 'development';
       options.tracesSampleRate = 0.3;
-      options.profilesSampleRate = 0.1;
+      options.beforeSend = maskSensitiveData;
       // Only send events in release mode, or if DSN is explicitly set in dev
     },
     appRunner: () async {
@@ -68,10 +69,7 @@ Future<void> main() async {
         await Firebase.initializeApp();
         
         // Enable App Check
-        await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.playIntegrity,
-          appleProvider: AppleProvider.deviceCheck,
-        );
+        await FirebaseAppCheck.instance.activate();
         
       } catch (e, stack) {
         debugPrint('Critical: Firebase init failed. App may run in degraded mode: $e');

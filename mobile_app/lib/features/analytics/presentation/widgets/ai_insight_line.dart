@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'legal_disclaimer.dart';
 
 class AiInsightLine extends StatelessWidget {
   final Future<String> insightFuture;
 
-  const AiInsightLine({Key? key, required this.insightFuture}) : super(key: key);
+  const AiInsightLine({super.key, required this.insightFuture});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class AiInsightLine extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF1C2128),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF0A7A6E).withOpacity(0.1)),
+              border: Border.all(color: const Color(0xFF0A7A6E).withValues(alpha: 0.1)),
             ),
             child: Row(
               children: [
@@ -30,7 +31,7 @@ class AiInsightLine extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Computing mathematical bounds...',
-                  style: TextStyle(color: const Color(0xFF8B949E).withOpacity(0.5), fontSize: 13),
+                  style: TextStyle(color: const Color(0xFF8B949E).withValues(alpha: 0.5), fontSize: 13),
                 ),
               ],
             ),
@@ -40,32 +41,38 @@ class AiInsightLine extends StatelessWidget {
         final insight = snapshot.data ?? '';
         if (insight.isEmpty) return const SizedBox.shrink();
 
-        return Container(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2128),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFF0A7A6E).withOpacity(0.3),
-            ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('🤖 ', style: TextStyle(fontSize: 14)),
-              Expanded(
-                child: Text(
-                  insight,
-                  style: const TextStyle(
-                    color: Color(0xFFB0B8C4),
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2128),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF0A7A6E).withValues(alpha: 0.3),
                 ),
               ),
-            ],
-          ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('🤖 ', style: TextStyle(fontSize: 14)),
+                  Expanded(
+                    child: Text(
+                      insight,
+                      style: const TextStyle(
+                        color: Color(0xFFB0B8C4),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const LegalDisclaimer(),
+          ],
         );
       },
     );

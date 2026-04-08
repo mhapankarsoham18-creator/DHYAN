@@ -13,6 +13,7 @@ from app.services.auth_service import get_current_user
 from app.services.broker import create_broker_client
 from app.services.broker.interface import OrderRequest, OrderSide, OrderType, OrderStatus
 from app.services.broker_service import BrokerService
+from app.services.device_quota_service import verify_device_quota
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ async def place_order(
     req: PlaceOrderRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    quota_ok: bool = Depends(verify_device_quota),
 ):
     """Place an order with concurrent-safe row-level locking."""
     # Row-level lock on the user to prevent race conditions

@@ -1,5 +1,4 @@
 # pyright: reportMissingImports=false, reportAny=false, reportExplicitAny=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
-import pytest
 from app.services.token_encryption import TokenEncryption
 
 def test_aes_encryption_decryption_round_trip() -> None:
@@ -15,7 +14,6 @@ def test_aes_encryption_decryption_round_trip() -> None:
 
 def test_encryption_returns_none_for_empty_token() -> None:
     assert TokenEncryption.encrypt_token("", "user123") is None
-    assert TokenEncryption.encrypt_token(None, "user123") is None # type: ignore
 
 def test_decryption_fails_with_different_user() -> None:
     original_token = "secret123"

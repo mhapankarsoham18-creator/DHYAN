@@ -193,3 +193,7 @@ class FyersClient(BrokerInterface):
         except Exception as e:
             logger.error("Fyers get_order_status error: %s", e)
             return OrderResponse(order_id=order_id, status=OrderStatus.REJECTED, message=str(e))
+
+    async def refresh_session(self) -> dict[str, str] | None:
+        # Implement Fyers token generation logic here
+        return None

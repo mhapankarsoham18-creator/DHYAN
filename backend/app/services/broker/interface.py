@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+# No typing imports needed for None pipe operator in Python 3.10
 from dataclasses import dataclass
 from enum import Enum
 
@@ -28,7 +28,7 @@ class OrderRequest:
     side: OrderSide
     order_type: OrderType
     quantity: int
-    price: Optional[float] = None  # Required for LIMIT, ignored for MARKET
+    price: float | None = None  # Required for LIMIT, ignored for MARKET
 
 
 @dataclass
@@ -36,8 +36,8 @@ class OrderResponse:
     """Represents the broker's response after placing an order."""
     order_id: str
     status: OrderStatus
-    filled_price: Optional[float] = None
-    message: Optional[str] = None
+    filled_price: float | None = None
+    message: str | None = None
 
 
 @dataclass
@@ -46,8 +46,8 @@ class Position:
     symbol: str
     quantity: int
     average_price: float
-    current_price: Optional[float] = None
-    pnl: Optional[float] = None
+    current_price: float | None = None
+    pnl: float | None = None
 
 
 @dataclass
@@ -55,9 +55,9 @@ class Quote:
     """Represents a market quote for a symbol."""
     symbol: str
     last_price: float
-    bid: Optional[float] = None
-    ask: Optional[float] = None
-    volume: Optional[int] = None
+    bid: float | None = None
+    ask: float | None = None
+    volume: int | None = None
 
 
 class BrokerInterface(ABC):
@@ -135,5 +135,15 @@ class BrokerInterface(ABC):
 
         Returns:
             An OrderResponse with the current status.
+        """
+        ...
+
+    @abstractmethod
+    async def refresh_session(self) -> dict[str, str] | None:
+        """Attempt to refresh an expired access token using the stored refresh_token.
+        
+        Returns:
+            A dict containing new token keys (e.g. {'access_token': 'atk', 'refresh_token': 'rtk'}),
+            or None if refresh failed or is unsupported.
         """
         ...

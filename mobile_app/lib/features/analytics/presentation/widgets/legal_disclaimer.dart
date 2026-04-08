@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Mandatory SEBI/App Store compliance disclaimer.
 /// Must appear on every screen that shows any analysis, AI output, or chart data.
 class LegalDisclaimer extends StatelessWidget {
-  const LegalDisclaimer({Key? key}) : super(key: key);
+  const LegalDisclaimer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +11,9 @@ class LegalDisclaimer extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.15),
+        color: Colors.black.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFF30363D).withOpacity(0.5)),
+        border: Border.all(color: const Color(0xFF30363D).withValues(alpha: 0.5)),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,

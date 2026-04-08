@@ -259,3 +259,7 @@ class CoinDCXClient(BrokerInterface):
         except Exception as e:
             logger.error("CoinDCX get_order_status error: %s", e)
             return OrderResponse(order_id=order_id, status=OrderStatus.REJECTED, message=str(e))
+
+    async def refresh_session(self) -> dict[str, str] | None:
+        # CoinDCX API uses JWT secrets directly, no daily refresh needed mostly
+        return None

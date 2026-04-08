@@ -9,10 +9,15 @@ import random
 import math
 import hashlib
 from datetime import datetime, timezone, timedelta
-from typing import Dict, List
+from typing import Any, TypedDict
+
+class SimTicker(TypedDict):
+    symbol: str
+    base_price: float
+    volatility: float
 
 # Simulation universe — fictional tickers so users can't cross-reference
-SIM_TICKERS = [
+SIM_TICKERS: list[SimTicker] = [
     {"symbol": "ALPHATECH", "base_price": 1250.0, "volatility": 0.025},
     {"symbol": "NEXAGEN",   "base_price": 780.0,  "volatility": 0.030},
     {"symbol": "VAULTFIN",  "base_price": 2100.0, "volatility": 0.020},
@@ -49,7 +54,7 @@ def generate_price_series(
     sim_start: datetime,
     symbol: str,
     num_points: int = 168,  # 1 point per hour for 7 days
-) -> List[Dict]:
+) -> list[dict[str, Any]]:
     """
     Generate a deterministic-per-user random walk price series.
     Uses Geometric Brownian Motion: S(t+1) = S(t) * exp((mu - 0.5*sigma^2)*dt + sigma*sqrt(dt)*Z)
@@ -83,7 +88,7 @@ def generate_price_series(
     return prices
 
 
-def get_current_simulated_prices(user_id: str, sim_start: datetime) -> List[Dict]:
+def get_current_simulated_prices(user_id: str, sim_start: datetime) -> list[dict[str, Any]]:
     """
     Get the CURRENT simulated price for all tickers. 
     Computed from the random walk up to the current moment.
@@ -115,7 +120,7 @@ def get_current_simulated_prices(user_id: str, sim_start: datetime) -> List[Dict
     return results
 
 
-def get_simulated_market_overview(user_id: str, sim_start: datetime) -> Dict:
+def get_simulated_market_overview(user_id: str, sim_start: datetime) -> dict[str, Any]:
     """Full market overview using simulated data."""
     prices = get_current_simulated_prices(user_id, sim_start)
 
