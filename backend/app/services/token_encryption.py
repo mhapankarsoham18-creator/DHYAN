@@ -10,9 +10,15 @@ from cryptography.hazmat.primitives import hashes
 logger = logging.getLogger(__name__)
 
 _raw_key = os.getenv("AES_ENCRYPTION_KEY")
+is_testing = os.environ.get("ENVIRONMENT") == "testing"
+
 if not _raw_key:
-    print("FATAL: AES_ENCRYPTION_KEY environment variable is missing", file=sys.stderr)
-    sys.exit(1)
+    if is_testing:
+        # Provide a valid 32-byte base64 encoded string for testing mocks
+        _raw_key = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
+    else:
+        print("FATAL: AES_ENCRYPTION_KEY environment variable is missing", file=sys.stderr)
+        sys.exit(1)
 
 MASTER_KEY = base64.b64decode(_raw_key)
 
