@@ -19,14 +19,20 @@ jobs:
         channel: 'stable'
         cache: true
         
+    - name: Generate CI Env Asset Files
+      working-directory: ./mobile_app
+      run: |
+        touch .env.development
+        touch .env.production
+        
     - name: Install dependencies
-      working-directory: ./mobile
+      working-directory: ./mobile_app
       run: flutter pub get
         
     - name: Analyze code
-      working-directory: ./mobile
+      working-directory: ./mobile_app
       run: flutter analyze
       
     - name: Run tests
-      working-directory: ./mobile
+      working-directory: ./mobile_app
       run: flutter test

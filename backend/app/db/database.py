@@ -8,10 +8,14 @@ _ = load_dotenv()
 from urllib.parse import urlparse, urlunparse
 
 db_url = os.environ.get("DATABASE_URL")
+is_testing = os.environ.get("ENVIRONMENT") == "testing"
 
 if not db_url:
-    print("FATAL: DATABASE_URL must be provided in .env.", file=sys.stderr)
-    sys.exit(1)
+    if is_testing:
+        db_url = "postgresql+asyncpg://dummy:dummy@localhost:5432/dummy"
+    else:
+        print("FATAL: DATABASE_URL must be provided in .env.", file=sys.stderr)
+        sys.exit(1)
 
 # Ensure asyncpg is the dialect
 parsed = urlparse(db_url)
