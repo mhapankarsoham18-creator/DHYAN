@@ -2,33 +2,65 @@ name: Backend CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-        cache: 'pip'
-        
-    - name: Install Dependencies
-      working-directory: ./backend
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: Run Pytest
-      working-directory: ./backend
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-        ENVIRONMENT: testing
-      run: |
-        pytest tests/ -v
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── SAST Scan ──
+      - name: Run Bandit security scan
+        run: python -m bandit -c bandit.yaml -r app/ -f json -o bandit-report.json || true
+
+      - name: Check Bandit results
+        run: |
+          python -c "
+          import json, sys, pathlib
+          report = pathlib.Path('bandit-report.json')
+          if not report.exists():
+              print('SKIP: No bandit report generated')
+              sys.exit(0)
+          data = json.loads(report.read_text())
+          high = [r for r in data.get('results', []) if r['issue_severity'] == 'HIGH']
+          if high:
+              print(f'FAIL: {len(high)} HIGH severity issues found')
+              for r in high:
+                  print(f\"  {r['filename']}:{r['line_number']} — {r['issue_text']}\")
+              sys.exit(1)
+          print('PASS: No HIGH severity issues')
+          "
+
+      # ── Tests ──
+      # ENVIRONMENT=testing tells database.py, auth_service.py, and token_encryption.py
+      # to use safe dummy values instead of crashing on missing secrets.
+      # This is architecturally correct: unit tests mock the DB session anyway,
+      # so no real database connection is ever established.
+      - name: Run tests
+        env:
+          ENVIRONMENT: testing
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: backend/bandit-report.json

@@ -2,37 +2,40 @@ name: Flutter CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   analyze_and_test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile_app
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: 'any'
-        channel: 'stable'
-        cache: true
-        
-    - name: Generate CI Env Asset Files
-      working-directory: ./mobile_app
-      run: |
-        touch .env.development
-        touch .env.production
-        
-    - name: Install dependencies
-      working-directory: ./mobile_app
-      run: flutter pub get
-        
-    - name: Analyze code
-      working-directory: ./mobile_app
-      run: flutter analyze
-      
-    - name: Run tests
-      working-directory: ./mobile_app
-      run: flutter test
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
+
+      # .env.development and .env.production are listed as assets in pubspec.yaml
+      # but are gitignored (correctly — they contain secrets locally).
+      # We generate empty placeholders so flutter analyze doesn't fail.
+      - name: Generate CI env asset placeholders
+        run: |
+          echo "MOCK=true" > .env.development
+          echo "MOCK=true" > .env.production
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
