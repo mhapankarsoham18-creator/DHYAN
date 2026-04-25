@@ -11,7 +11,7 @@ async def test_verify_device_quota_under_limit(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
     request.headers = {"X-Device-Fingerprint": "device_123"}
     
-    mock_redis.incr.return_value = 5 # 5th use
+    mock_redis.incr = AsyncMock(return_value=5)
     
     mock_db = AsyncMock()
     
@@ -27,11 +27,12 @@ async def test_verify_device_quota_first_use(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
     request.headers = {"X-Device-Fingerprint": "device_abc"}
     
-    mock_redis.incr.return_value = 1 # 1st use
+    mock_redis.incr = AsyncMock(return_value=1)
+    mock_redis.expire = AsyncMock()
     
     mock_db = AsyncMock()
     
-    _ = await verify_device_quota(request, mock_db)
+    _ = await verify_device_quota(request=request, db=mock_db)
     
     mock_redis.expire.assert_called_once()
 
@@ -40,7 +41,7 @@ async def test_verify_device_quota_over_limit(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
     request.headers = {"X-Device-Fingerprint": "device_spam"}
     
-    mock_redis.incr.return_value = 11 # 11th use, over limit (10)
+    mock_redis.incr = AsyncMock(return_value=11)
     
     mock_db = AsyncMock()
     
@@ -60,7 +61,7 @@ async def test_verify_device_quota_redis_fallback() -> None:
     mock_db_result.scalar_one_or_none.return_value = None
     mock_db.execute.return_value = mock_db_result
     
-    _ = await verify_device_quota(request, mock_db)
+    _ = await verify_device_quota(request=request, db=mock_db)
     
     assert mock_db.add.called
     assert mock_db.commit.called
