@@ -53,10 +53,10 @@ This plan integrates **Premium Subscriptions (Razorpay/UPI)** and **Bank-Grade S
 - [x] **2.4 Client-Side Flow**
   - Integrate `razorpay_flutter` package.
   - Handle success/failure callbacks and visually update the Profile settings to "Pro Active".
-- [ ] **2.5 Payment Paper Trail & Accounting**
+- [x] **2.5 Payment Paper Trail & Accounting**
   - Generate programmatic invoices with GST details for all ₹5/trade or ₹99/month collections.
   - Ensure formal receipt generation to build tax-compliant records from day one.
-- [ ] **2.6 Free Tier Device Fingerprinting**
+- [x] **2.6 Free Tier Device Fingerprinting**
   - Bind free tier quotas (e.g., 10 free trades/month) to unique device IDs instead of accounts.
   - Prevents "free tier abuse" via mass account generation.
 

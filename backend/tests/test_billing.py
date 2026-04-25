@@ -6,17 +6,20 @@ from unittest.mock import patch, MagicMock
 
 pytestmark = pytest.mark.asyncio
 
-def test_gst_invoice_generation() -> None:
-    invoice = BillingService.generate_invoice(
-        user_id="user123",
+async def test_gst_invoice_generation() -> None:
+    mock_db = MagicMock()
+    invoice = await BillingService.generate_invoice(
+        db=mock_db,
+        user_id="12345678-1234-5678-1234-567812345678",
         payment_id="pay_ABC",
         amount_inr=1000.0,
     )
-    assert invoice["user_id"] == "user123"
+    assert invoice["user_id"] == "12345678-1234-5678-1234-567812345678"
     assert invoice["payment_id"] == "pay_ABC"
     assert invoice["total_amount"] == 1000.0
     assert invoice["gst_amount"] == 180.0  # 18% of 1000
     assert invoice["base_amount"] == 820.0 # 1000 - 180
+    assert mock_db.add.called
 
 @patch("app.services.razorpay_service.client")
 def test_create_customer_success(mock_client: MagicMock) -> None:

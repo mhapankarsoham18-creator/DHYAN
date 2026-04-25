@@ -64,8 +64,8 @@ async def razorpay_webhook(request: Request, db: Annotated[AsyncSession, Depends
                     payment_amount = cast(dict[str, Any], payload.get("payment", {})).get("entity", {}).get("amount", 99900)
                     amount_inr = payment_amount / 100.0  # Convert paise to INR
                     
-                    invoice = BillingService.generate_invoice(str(sub_user.id), payment_id_payload, amount_inr)
-                    BillingService.send_receipt_email(sub_user.email or "user@example.com", invoice)
+                    invoice = await BillingService.generate_invoice(db, str(sub_user.id), payment_id_payload, amount_inr)
+                    BillingService.send_receipt_email(sub_user.phone_number or "user@example.com", invoice)
                 
             elif event_type in ["subscription.cancelled", "subscription.halted"]:
                 setattr(local_sub, "status", "inactive")

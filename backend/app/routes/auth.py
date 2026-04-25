@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from app.db.database import get_db
 from app.models import User, BrokerConnection
 from app.services.auth_service import create_access_token, get_current_user
-from app.services.security_middleware import limiter
+from app.core.upstash_rate_limiter import upstash_rate_limit
 
 # Setup Firebase Admin
 firebase_cred_path = os.getenv("FIREBASE_CREDENTIALS", "firebase_adminsdk.json")
@@ -43,7 +43,7 @@ class ProfileUpdateRequest(BaseModel):
     phone_number: str | None = Field(None, max_length=20)
 
 @router.post("/exchange-token", response_model=TokenExchangeResponse)
-@limiter.limit("5/15minute")
+@upstash_rate_limit(max_requests=5, window_seconds=900)
 async def exchange_token(request: Request, req: TokenExchangeRequest, db: AsyncSession = Depends(get_db)):
     # Verify the Firebase token
     if not firebase_admin._apps:

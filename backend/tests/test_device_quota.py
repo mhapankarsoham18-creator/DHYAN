@@ -1,57 +1,66 @@
 # pyright: reportMissingImports=false, reportAny=false, reportExplicitAny=false, reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
 import pytest
+from unittest.mock import MagicMock, AsyncMock, patch
 from fastapi import Request, HTTPException
-from unittest.mock import MagicMock, AsyncMock
-
-from app.services.device_quota_service import verify_device_quota, FREE_TIER_MONTHLY_LIMIT
-from app.models.device_quota import DeviceQuota
+from app.services.device_quota_service import verify_device_quota
 
 pytestmark = pytest.mark.asyncio
 
-async def test_verify_device_quota_no_fingerprint(mock_db_session: AsyncMock) -> None:
+@patch("app.core.redis.upstash_redis")
+async def test_verify_device_quota_under_limit(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
-    request.headers = {}
+    request.headers = {"X-Device-Fingerprint": "device_123"}
     
-    result = await verify_device_quota(request, mock_db_session)
-    assert result is True
+    mock_redis.incr.return_value = 5 # 5th use
+    
+    mock_db = AsyncMock()
+    
+    # Should not raise exception
+    _ = await verify_device_quota(request=request, db=mock_db)
+    
+    # Redis incr should be called
+    mock_redis.incr.assert_called_once()
+    mock_redis.expire.assert_not_called()
 
-async def test_verify_device_quota_first_time(mock_db_session: AsyncMock) -> None:
+@patch("app.core.redis.upstash_redis")
+async def test_verify_device_quota_first_use(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
-    request.headers = {"X-Device-Fingerprint": "mock_fp_123"}
+    request.headers = {"X-Device-Fingerprint": "device_abc"}
     
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = None
-    mock_db_session.execute = AsyncMock(return_value=mock_result)
+    mock_redis.incr.return_value = 1 # 1st use
     
-    result = await verify_device_quota(request, mock_db_session)
-    assert result is True
-    assert mock_db_session.add.called
-    assert mock_db_session.commit.call_count >= 1
+    mock_db = AsyncMock()
+    
+    _ = await verify_device_quota(request, mock_db)
+    
+    mock_redis.expire.assert_called_once()
 
-async def test_verify_device_quota_within_limit(mock_db_session: AsyncMock) -> None:
+@patch("app.core.redis.upstash_redis")
+async def test_verify_device_quota_over_limit(mock_redis: AsyncMock) -> None:
     request = MagicMock(spec=Request)
-    request.headers = {"X-Device-Fingerprint": "mock_fp_123"}
+    request.headers = {"X-Device-Fingerprint": "device_spam"}
     
-    quota = DeviceQuota(device_id="mock_fp_123", month_period="2026-04", free_trades_used=5) # type: ignore
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = quota
-    mock_db_session.execute = AsyncMock(return_value=mock_result)
+    mock_redis.incr.return_value = 11 # 11th use, over limit (10)
     
-    result = await verify_device_quota(request, mock_db_session)
-    assert result is True
-    assert quota.free_trades_used == 6
-    assert mock_db_session.commit.call_count == 1
+    mock_db = AsyncMock()
+    
+    with pytest.raises(HTTPException) as exc:
+        _ = await verify_device_quota(request=request, db=mock_db)
+    
+    assert exc.value.status_code == 429
+    assert "Free tier limit" in exc.value.detail
 
-async def test_verify_device_quota_exceeds_limit(mock_db_session: AsyncMock) -> None:
+@patch("app.core.redis.upstash_redis", None)
+async def test_verify_device_quota_redis_fallback() -> None:
     request = MagicMock(spec=Request)
-    request.headers = {"X-Device-Fingerprint": "mock_fp_123"}
+    request.headers = {"X-Device-Fingerprint": "device_postgres"}
     
-    quota = DeviceQuota(device_id="mock_fp_123", month_period="2026-04", free_trades_used=FREE_TIER_MONTHLY_LIMIT) # type: ignore
-    mock_result = MagicMock()
-    mock_result.scalar_one_or_none.return_value = quota
-    mock_db_session.execute = AsyncMock(return_value=mock_result)
+    mock_db = AsyncMock()
+    mock_db_result = MagicMock()
+    mock_db_result.scalar_one_or_none.return_value = None
+    mock_db.execute.return_value = mock_db_result
     
-    with pytest.raises(HTTPException) as exc_info:
-        _ = await verify_device_quota(request, mock_db_session)
+    _ = await verify_device_quota(request, mock_db)
     
-    assert exc_info.value.status_code == 429
+    assert mock_db.add.called
+    assert mock_db.commit.called

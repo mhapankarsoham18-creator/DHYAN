@@ -118,6 +118,31 @@ def test_sebi_sanitizer_blocks_entry_point() -> None:
     result = sanitize_response("This is a good entry point for long-term investors.")
     assert "compliance" in result.lower() or "advisor" in result.lower()
 
+def test_sebi_sanitizer_blocks_adversarial_accumulate() -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response("Investors may want to accumulate shares at this level.")
+    assert "compliance" in result.lower()
+
+def test_sebi_sanitizer_blocks_adversarial_long() -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response("The risk-reward ratio favors deciding to go long here.")
+    assert "compliance" in result.lower()
+
+def test_sebi_sanitizer_blocks_adversarial_profit() -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response("It is time to book profits before the correction.")
+    assert "compliance" in result.lower()
+
+def test_sebi_sanitizer_blocks_adversarial_recommend() -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response("We highly recommend monitoring this stock.")
+    assert "compliance" in result.lower()
+
+def test_sebi_sanitizer_blocks_adversarial_undervalued() -> None:
+    from app.services.ai_service import sanitize_response
+    result = sanitize_response("This appears heavily undervalued relative to its peers.")
+    assert "compliance" in result.lower()
+
 
 @pytest.mark.parametrize("bad_phrase", [
     "You should consider buying this immediately",

@@ -9,13 +9,13 @@ from alembic import context
 
 # Import our models and database config so Alembic can see them
 from app.models import Base
-from app.db.database import DATABASE_URL
+from app.db.database import async_db_url
 
 # this is the Alembic Config object
 config = context.config
 
 # Override sqlalchemy.url with the real async URL
-config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
+config.set_main_option("sqlalchemy.url", async_db_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

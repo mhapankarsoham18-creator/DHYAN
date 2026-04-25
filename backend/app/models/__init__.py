@@ -7,6 +7,7 @@ from app.models.journal import Journal
 from app.models.subscription import Subscription
 from app.models.notification import Notification
 from app.models.device_quota import DeviceQuota
+from app.models.invoice import Invoice
 
 # Export all models for easier import when configuring Alembic
-__all__ = ["Base", "User", "BrokerConnection", "Order", "Alert", "Journal", "Subscription", "Notification", "DeviceQuota"]
+__all__ = ["Base", "User", "BrokerConnection", "Order", "Alert", "Journal", "Subscription", "Notification", "DeviceQuota", "Invoice"]

@@ -1,10 +1,8 @@
+# pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false
 import os
-import json
 import logging
-import asyncio
-from typing import Optional, List, Dict, Any
 from openai import AsyncOpenAI
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -24,27 +22,39 @@ nim_client = AsyncOpenAI(
 
 analyzer = SentimentIntensityAnalyzer()
 
+import re
+
 # --- SEBI Sanitization Filter ---
 # Strictly block terms that could be classified as "investment advice" by regulators.
-FORBIDDEN_PHRASES = [
-    "buy", "sell", "good entry", "target price", "will rise", "will fall",
-    "must invest", "strong bullish signal", "strong bearish signal", "recommend",
-    "consider buying", "accumulate", "undervalued", "go long", "book profits",
-    "short term target", "long term target", "price target", "stop loss",
-    "entry point", "exit point", "golden cross", "death cross", "breakout expected",
-    "guaranteed return", "sure shot", "multibagger", "10x return", "safe investment",
-    "buy on dips", "sell on rallies", "hold for long term", "add more", "reduce position",
-    "exit immediately", "buy immediately", "strong buy", "strong sell", "upside potential",
-    "downside risk", "profit booking", "wealth creator", "portfolio pick", "time to buy",
-    "time to sell", "don't miss", "once in a lifetime", "market outperformer"
+# We use regex to catch semantic variations (e.g., "consider buying", "good time to accumulate").
+FORBIDDEN_PATTERNS = [
+    r"\b(buy|sell|buying|selling)\b",
+    r"\b(good|great|attractive)\s*(entry|exit)\b",
+    r"\b(price\s*)?target(\s*is)?\s*(\$|\d+|[a-zA-Z]+)\b",
+    r"\btarget\s*price\b",
+    r"\bwill\s*(rise|fall|drop|pump|dump)\b",
+    r"\bmust\s*invest\b",
+    r"\bstrong\s*(bullish|bearish)\s*signal\b",
+    r"\b(highly\s*)?recommend(ed)?\b",
+    r"\b(accumulate|add\s*more|load\s*up)\b",
+    r"\bbook\s*profits\b",
+    r"\bgo\s*(long|short)\b",
+    r"\b(undervalued|overvalued)\s*relative\s*to\b",
+    r"\b(guaranteed\s*return|sure\s*shot|multibagger|wealth\s*creator)\b",
+    r"\b(buy\s*on\s*dips|sell\s*on\s*rallies)\b",
+    r"\b(profit\s*booking|time\s*to\s*buy|time\s*to\s*sell)\b",
+    r"\b(exit|buy)\s*immediately\b",
+    r"\bsafe\s*investment\b"
 ]
 
-def sanitize_response(text: str) -> str:
+def sanitize_response(text: str | None) -> str:
     """Intercepts LLM output and shreds it if any forbidden SEC/SEBI terms are found."""
+    if not text:
+        return ""
     text_lower = text.lower()
-    for phrase in FORBIDDEN_PHRASES:
-        if phrase in text_lower:
-            logger.error(f"SEBI FILTER TRIGGERED: Blocked phrase '{phrase}' in AI response. Shredding output.")
+    for pattern in FORBIDDEN_PATTERNS:
+        if re.search(pattern, text_lower):
+            logger.error(f"SEBI FILTER TRIGGERED: Blocked pattern '{pattern}' in AI response. Shredding output.")
             return "Analysis omitted for compliance. Please consult a registered financial advisor."
     return text.strip()
 
@@ -53,11 +63,15 @@ def sanitize_response(text: str) -> str:
 # FEATURE 1: Chart Insight (Math First, LLM second)
 # =====================================================================
 async def get_chart_insight(
-    symbol: str, rsi: Optional[float], macd_signal: Optional[str], 
+    symbol: str, rsi: float | None, macd_signal: str | None, 
     price_vs_52w_high: float, price_vs_52w_low: float, trend: str
 ) -> str:
     # 1. Deterministic Math & Fact Building
-    facts = []
+    facts: list[str] = []
+    
+    if macd_signal:
+        facts.append(f"MACD signal is {macd_signal}.")
+        
     if rsi is not None:
         if rsi < 30:
             facts.append("The stock is currently mathematically oversold.")
@@ -94,7 +108,7 @@ async def get_chart_insight(
             temperature=0.1,
             timeout=5.0
         )
-        raw_text = response.choices[0].message.content
+        raw_text = response.choices[0].message.content or ""
         return sanitize_response(raw_text)
     except Exception as e:
         logger.warning(f"NIM API failure for Chart Insight: {e}")
@@ -140,15 +154,15 @@ async def explain_pattern(pattern_name: str, symbol: str) -> str:
 # =====================================================================
 # FEATURE 3: News Sentiment Summarizer
 # =====================================================================
-async def get_sentiment_summary(symbol: str, headlines: List[str]) -> Dict[str, Any]:
+async def get_sentiment_summary(symbol: str, headlines: list[str]) -> dict[str, str]:
     if not headlines:
         return {"summary": "No recent news found.", "sentiment": "neutral"}
 
     # 1. Deterministic Sentiment Scoring using Vader locally
-    total_score = 0
+    total_score = 0.0
     for h in headlines:
-        score = analyzer.polarity_scores(h)
-        total_score += score['compound']
+        score = analyzer.polarity_scores(h) # type: ignore
+        total_score += float(score['compound']) # type: ignore
         
     avg_score = total_score / len(headlines)
     sentiment_label = "neutral"

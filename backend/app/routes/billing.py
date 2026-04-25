@@ -96,3 +96,32 @@ async def request_refund(
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Refund failed: {str(e)}")
+
+@router.get("/invoices")
+async def get_invoices(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Fetch all tax-compliant invoices generated for the user."""
+    from app.models.invoice import Invoice
+    
+    result = await db.execute(
+        select(Invoice)
+        .where(Invoice.user_id == current_user.id)
+        .order_by(Invoice.created_at.desc())
+    )
+    invoices = result.scalars().all()
+    
+    return {
+        "status": "success",
+        "invoices": [
+            {
+                "id": inv.id,
+                "receipt_number": inv.receipt_number,
+                "description": inv.description,
+                "base_amount": inv.amount_base,
+                "cgst": inv.cgst,
+                "sgst": inv.sgst,
+                "total": inv.total_amount,
+                "date": inv.created_at.isoformat() if inv.created_at else None
+            }
+            for inv in invoices
+        ]
+    }
